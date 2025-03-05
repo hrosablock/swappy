@@ -11,8 +11,8 @@ services:
       - ./db:/docker-entrypoint-initdb.d
     networks:
       - not_network
-    expose:
-      - "5432"
+    ports:
+      - "5431:5432"
     restart: always
     env_file:
       - .env

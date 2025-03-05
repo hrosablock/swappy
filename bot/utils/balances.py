@@ -83,7 +83,7 @@ async def fetch_erc20_balances(address:str, chain_id:int) -> list:
                     result.append({"name": display_name, "token_address":token_address, "balance":balance, "decimals":decimals})
                     formatted_result += f"\n\n{display_name}: {formatted_balance}   \n{html.code(token_address)}"
                 
-                return result, formatted_result.strip()
+                return result, formatted_result
     except Exception:
         logging.exception(f"Failed to fetch ERC20 balances for {address} on chain id {chain_id})")
         return [], ""
