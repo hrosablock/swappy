@@ -70,7 +70,7 @@ async def set_chain_id(callback: CallbackQuery, db: AsyncSession, state: FSMCont
             await state.set_state(SwapState.from_token)
         else:
             await callback.answer("User not found")
-        await callback.answer()
+
     except Exception as e:
         await callback.message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
@@ -88,7 +88,7 @@ async def set_from_token(callback: CallbackQuery, state: FSMContext):
             await callback.message.answer(text=f"Now enter the receiving token's contract address:", reply_markup=cancel_kb())
             await state.update_data(from_token=from_token)
             await state.set_state(SwapState.to_token)
-            await callback.answer()
+    
         else:
             await callback.answer("Address is incorrect")
     except Exception as e:

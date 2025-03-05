@@ -102,7 +102,7 @@ async def callback_cancel(callback: CallbackQuery, state: FSMContext):
     try:
         await state.clear()
         await callback.message.answer(text=f"Hello, {html.bold(htmlescape(callback.from_user.full_name))} and welcome! <b>Select an option:</b>", reply_markup=main_menu_kb())
-        await callback.answer()
+
     except Exception as e:
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
 
@@ -115,7 +115,7 @@ async def callback_referral(callback: CallbackQuery):
     try:
         referral_link = f"https://t.me/{bot_name}?start=id_{callback.from_user.id}"
         await callback.message.answer(text=f"Your referral link: <code>{referral_link}</code>", reply_markup=menu_kb())
-        await callback.answer()
+
     except Exception as e:
         logging.exception(f"Error in {sys._getframe().f_code.co_name}")
 

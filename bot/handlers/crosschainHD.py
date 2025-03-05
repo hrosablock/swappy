@@ -60,9 +60,6 @@ async def set_from_chain(callback: CallbackQuery, state: FSMContext) -> None:
     except Exception as e:
         await callback.message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
-    finally:
-        await callback.answer()
-
 
 @router.callback_query(CrosschainState.to_chain, F.data.startswith("crosschain_to_chain_") & F.data.removeprefix("crosschain_to_chain_").isdigit())
 async def set_to_chain(callback: CallbackQuery, state: FSMContext, db: AsyncSession) -> None:
@@ -91,9 +88,6 @@ async def set_to_chain(callback: CallbackQuery, state: FSMContext, db: AsyncSess
     except Exception as e:
         await callback.message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
-    finally:
-        await callback.answer()
-
 
 
 @router.callback_query(CrosschainState.from_token, F.data.startswith("crosschain_token_"))
@@ -105,14 +99,12 @@ async def set_from_token(callback: CallbackQuery, state: FSMContext) -> None:
             await callback.message.answer(text=f"Now enter the receiving token's contract address in destination chain:", reply_markup=cancel_kb())
             await state.update_data(from_token=from_token)
             await state.set_state(CrosschainState.to_token)
-            await callback.answer()
+    
         else:
             await callback.answer("Address is incorrect")
     except Exception as e:
         await callback.message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
-    finally:
-        await callback.answer()
 
 
 @router.message(CrosschainState.from_token)
@@ -263,5 +255,5 @@ async def confirm_crosschain_swap(callback: CallbackQuery, state: FSMContext, db
         await callback.answer("Crosschain swap failed")
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
     finally:
-        await callback.answer()
+
         await state.clear()

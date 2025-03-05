@@ -61,7 +61,7 @@ async def set_chain_id(callback: CallbackQuery, db: AsyncSession, state: FSMCont
 
         await state.update_data(chain_id=chain_id)
         await state.set_state(WithdrawState.token_address)
-        await callback.answer()
+
     except Exception as e:
         await callback.message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
@@ -78,7 +78,7 @@ async def set_token_address(callback: CallbackQuery, state: FSMContext):
             await state.set_state(WithdrawState.amount)
         else:
             await callback.answer("Invalid token address.")
-        await callback.answer()
+
     except Exception as e:
         await callback.message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")

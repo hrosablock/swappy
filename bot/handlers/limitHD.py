@@ -63,7 +63,7 @@ async def set_chain_id(callback: CallbackQuery, db: AsyncSession, state: FSMCont
             await state.set_state(LimitOrderState.maker_token)
         else:
             await callback.answer("User not found")
-        await callback.answer()
+
     except Exception as e:
         await callback.message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
@@ -81,7 +81,7 @@ async def set_maker_token(callback: CallbackQuery, state: FSMContext):
             await callback.message.answer(text=f"Now enter the receiving token's contract address:", reply_markup=cancel_kb())
             await state.update_data(maker_token=maker_token)
             await state.set_state(LimitOrderState.taker_token)
-            await callback.answer()
+    
         else:
             await callback.answer("Address is incorrect")
     except Exception as e:
@@ -218,9 +218,6 @@ async def set_partially_able(callback: CallbackQuery, state: FSMContext):
     except Exception as e:
         await callback.message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
-    finally:
-        await callback.answer()
-
 
 
 
@@ -254,7 +251,7 @@ async def confirm_limit_order(callback: CallbackQuery, state: FSMContext, db: As
         await callback.answer("Limit order creation failed.")
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
     finally:
-        await callback.answer()
+
         await state.clear()
 
 
