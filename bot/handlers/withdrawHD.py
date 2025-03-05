@@ -161,6 +161,7 @@ async def confirm_withdraw(callback: CallbackQuery, state: FSMContext, db: Async
         to_wallet = current_state.get("recipient")
 
         tx_hash = await send(
+            wallet=user.evm_wallet.address,
             encrypted_key=encrypted_key, 
             chain_id=chain_id,
             amount=amount,

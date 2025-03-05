@@ -154,7 +154,7 @@ async def create_limit_order(db, user_id, encrypted_key: str, chain_id: int, use
 #         dex_router = limit_dex_router.get(chain_id)
 #         user_address = to_checksum_address(user_address)
 #         contract = web3.eth.contract(address=dex_router, abi=cancel_limit_abi)
-#         nonce = await web3.eth.get_transaction_count(user_address, "pending")
+#         nonce = await web3.eth.get_transaction_count(user_address)
 #         tx_object = await contract.functions.cancelOrder(order_data).build_transaction({
 #             "nonce": nonce,
 #             "value": 0,

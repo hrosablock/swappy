@@ -4,12 +4,12 @@ from eth_utils import to_checksum_address
 from web3 import AsyncWeb3
 
 from bot.config import chain_id_to_rpc_url, evm_native_coin
-from bot.utils.dex import decrypt_key
+from bot.utils.dex import decrypt_key, get_transaction_count
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-async def send(encrypted_key: str, chain_id: int, amount: int, token_address: str, to_wallet: str):
+async def send(wallet:str, encrypted_key: str, chain_id: int, amount: int, token_address: str, to_wallet: str):
     try:
         token_address = to_checksum_address(token_address) if token_address else None
         to_wallet = to_checksum_address(to_wallet)
@@ -24,7 +24,7 @@ async def send(encrypted_key: str, chain_id: int, amount: int, token_address: st
             raise ConnectionError("Failed to connect to RPC")
 
         account = web3.eth.account.from_key(private_key)
-        nonce = await web3.eth.get_transaction_count(account.address)
+        nonce = await get_transaction_count(wallet, "pending", rpc_url, web3)
         gas_price = await web3.eth.gas_price
 
         if not token_address or token_address.lower() == evm_native_coin.lower():

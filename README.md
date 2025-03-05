@@ -17,6 +17,7 @@ Swappy Bot is a bot based on the OKX dex api that allows you to perform trading 
    ```
 2. Configure environment variables:
    - Copy `.env.example` to `.env` and update the necessary values.
+   - Edit `bot_name` in `bot/config.py`
 
 3. Build and start the container:
    ```sh

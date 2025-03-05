@@ -4,6 +4,7 @@ import hmac
 import logging
 from datetime import datetime, timezone
 from urllib.parse import urlencode
+import aiohttp
 
 from cryptography.fernet import Fernet
 from web3 import AsyncWeb3
@@ -11,6 +12,24 @@ from web3 import AsyncWeb3
 from bot.config import allowance_abi, api_base_url, gas_ratio
 from bot.env import (FERNET_KEY, OKX_API_KEY, OKX_PASSPHRASE, OKX_PROJECT_ID,
                      OKX_SECRET_KEY)
+
+
+async def get_transaction_count(user_address: str, block_type: str, rpc_url: str, web3: AsyncWeb3):
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "eth_getTransactionCount",
+        "params": [user_address, block_type],
+        "id": 1
+    }
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(rpc_url, json=payload, headers={"Content-Type": "application/json"}) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    return int(result["result"], 16) if "result" in result else None
+    except Exception:
+        return await web3.eth.get_transaction_count(user_address, block_type)
+
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -93,10 +112,10 @@ async def approve_transaction(session, chain_id: int, from_token: str, amount: s
 async def send_approve_tx(session, web3: AsyncWeb3, user: str, spender_address: str, from_token: str, from_amount: str, private_key: str, rpc_url: str, chain_id):
     try:
         allowance_amount = await get_allowance(web3, user, spender_address, from_token)
-        nonce = await web3.eth.get_transaction_count(user, "pending")
+        nonce = await get_transaction_count(user, "pending", rpc_url, web3)
         data = await approve_transaction(session, str(chain_id), from_token, from_amount)
         
-        if not nonce:
+        if nonce is None:
             raise LookupError("Nonce not found")
         
         if int(allowance_amount) < int(from_amount):

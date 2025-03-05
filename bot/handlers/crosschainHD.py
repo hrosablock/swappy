@@ -81,7 +81,7 @@ async def set_to_chain(callback: CallbackQuery, state: FSMContext, db: AsyncSess
         if user:
             native_coin_balance = await get_balance(from_chain, user.evm_wallet.address, evm_native_coin)
             formatted_balance = f"{round(native_coin_balance / 1e18, 12):.12f}"
-            
+
             erc_balances_list, erc_balances_string = await fetch_erc20_balances(user.evm_wallet.address, from_chain)
             await callback.message.answer(text=f"Please provide the token address or select from available tokens:\n\n{native_token_name}: {formatted_balance}\n{html.code(evm_native_coin)}{erc_balances_string}", 
                                          reply_markup=crosschain_token_kb(native_token_name, erc_balances_list))
@@ -156,16 +156,7 @@ async def set_amount(message: Message, state: FSMContext, db: AsyncSession) -> N
         if user:
             current_balance = await get_balance(current_state.get("from_chain"), user.evm_wallet.address, current_state.get("from_token"))
             decimals = await get_token_decimals(current_state.get("from_chain"), current_state.get("from_token"))
-            if current_state.get("from_token").lower() == evm_native_coin.lower():
-                rpc_url = chain_id_to_rpc_url.get(current_state.get("from_chain"))
-                web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(rpc_url))
-                if not await web3.is_connected():
-                    raise ConnectionError()
-                gas_price = await web3.eth.gas_price 
-                fee = (gas_price*150000)
-                if current_balance-fee < int(amount*(10**decimals)):
-                    await message.answer("Your balance doesn't match with your expectations", reply_markup=cancel_kb())
-            elif current_balance < int(amount*(10**decimals)):
+            if current_balance < int(amount*(10**decimals)):
                 await message.answer("Your balance doesn't match with your expectations", reply_markup=cancel_kb())
             else:
                 await message.answer("Now enter the slippage % (0.1 to 10)", reply_markup=cancel_kb())

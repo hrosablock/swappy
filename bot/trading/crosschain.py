@@ -8,7 +8,7 @@ from web3 import AsyncWeb3
 from bot.config import (chain_id_to_rpc_url, crosschain_approval_contract,
                         evm_native_coin, gas_ratio)
 from bot.utils.dex import (decrypt_key, get_crosschain_request_url,
-                           get_headers_params, send_approve_tx)
+                           get_headers_params, send_approve_tx, get_transaction_count)
 
 
 async def get_supported_chain(from_chain_id: int, to_chain_id: int=None):
@@ -72,12 +72,12 @@ async def crosschain_swap(encrypted_key: str, from_chain_id: int, to_chain_id: i
         async with aiohttp.ClientSession() as session:
             if from_token.lower() != evm_native_coin.lower():
                 approve_res = await send_approve_tx(session, web3, user_wallet, spender_address, from_token, amount, private_key, rpc_url, from_chain_id)
-                nonce = await web3.eth.get_transaction_count(user_wallet, "pending")
+                nonce = await get_transaction_count(user_wallet, "pending", rpc_url, web3)
                 approve_nonce = approve_res.get("nonce")
                 if approve_res.get("ok") and nonce <= approve_nonce:
                     nonce = approve_nonce + 1
             else:
-                nonce = await web3.eth.get_transaction_count(user_wallet, "pending")
+                nonce = await get_transaction_count(user_wallet, "pending", rpc_url, web3)
             quote_data = await get_quote_and_bridge_id(from_chain_id, to_chain_id, from_token, to_token, amount, slippage, max_price_impact)
             if not quote_data.get("ok"):
                 return quote_data
