@@ -1,8 +1,8 @@
 import logging
 import re
 import sys
-
 from html import escape as htmlescape
+
 from aiogram import F, Router, html
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
@@ -12,8 +12,10 @@ from eth_utils.address import is_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.config import chain_id_to_name, chain_id_to_tx_scan_url
-from bot.db.queries import get_user_by_id, get_limit_order_by_hash
-from bot.keyboards.menuKB import cancel_kb, limit_chain_kb, limit_from_token_kb, limit_yes_no_kb, confirm_kb, menu_kb
+from bot.db.queries import get_limit_order_by_hash, get_user_by_id
+from bot.keyboards.menuKB import (cancel_kb, confirm_kb, limit_chain_kb,
+                                  limit_from_token_kb, limit_yes_no_kb,
+                                  menu_kb)
 from bot.trading.limit import create_limit_order
 from bot.utils.balances import fetch_erc20_balances, get_balance
 from bot.utils.token_details import get_token_decimals

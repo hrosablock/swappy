@@ -10,11 +10,11 @@ from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.config import bot_name
-from bot.utils.dex import decrypt_key
 from bot.db.models import EVMWallet, User
 from bot.db.queries import (get_user_by_id, get_user_by_id_for_update,
                             user_referrals_update)
 from bot.keyboards.menuKB import *
+from bot.utils.dex import decrypt_key
 from bot.utils.wallet_generator import evm_generator
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

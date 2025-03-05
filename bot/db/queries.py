@@ -2,7 +2,7 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from bot.db.models import (EVMLimitOrder, User)
+from bot.db.models import EVMLimitOrder, User
 
 
 async def get_user_by_id(db: AsyncSession, user_id: int):

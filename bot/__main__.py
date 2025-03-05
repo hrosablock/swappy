@@ -7,12 +7,13 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.utils.callback_answer import CallbackAnswerMiddleware
+
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 from bot.db.database import async_session, engine
 from bot.db.models import Base
 from bot.env import REDIS_URL, TOKEN
-from bot.handlers import menuHD, swapHD, limitHD, crosschainHD, withdrawHD
-from aiogram.utils.callback_answer import CallbackAnswerMiddleware
+from bot.handlers import crosschainHD, limitHD, menuHD, swapHD, withdrawHD
 from bot.Middlewares.dbMD import DbSessionMiddleware
 from bot.Middlewares.FloodMD import FloodMiddleware
 

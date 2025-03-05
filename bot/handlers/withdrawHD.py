@@ -9,10 +9,11 @@ from aiogram.types import CallbackQuery, Message
 from eth_utils.address import is_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.config import evm_native_coin, chain_id_to_native_token_name, chain_id_to_tx_scan_url
+from bot.config import (chain_id_to_native_token_name, chain_id_to_tx_scan_url,
+                        evm_native_coin)
 from bot.db.queries import get_user_by_id
-from bot.keyboards.menuKB import (cancel_kb, withdraw_chain_kb,
-                                  withdraw_token_kb, confirm_kb, menu_kb)
+from bot.keyboards.menuKB import (cancel_kb, confirm_kb, menu_kb,
+                                  withdraw_chain_kb, withdraw_token_kb)
 from bot.trading.withdraw import send
 from bot.utils.balances import fetch_erc20_balances, get_balance
 from bot.utils.token_details import get_token_decimals
@@ -53,9 +54,10 @@ async def set_chain_id(callback: CallbackQuery, db: AsyncSession, state: FSMCont
         user_wallet = user.evm_wallet.address
         erc_balances_list, erc_balances_string = await fetch_erc20_balances(user_wallet, chain_id)
         native_balance = await get_balance(chain_id, user_wallet, evm_native_coin)
+        formatted_balance = f"{round(native_balance / 1e18, 12):.12f}"
 
         await callback.message.answer(
-            text=f"Choose a token to withdraw or send its contract address:\n\n{native_token_name}: {round(native_balance/(1e18), 10)}\n{html.code(evm_native_coin)}{erc_balances_string}",
+            text=f"Choose a token to withdraw or send its contract address:\n\n{native_token_name}: {formatted_balance}\n{html.code(evm_native_coin)}\n{erc_balances_string}",
             reply_markup=withdraw_token_kb(native_token_name, erc_balances_list)
         )
 

@@ -8,13 +8,13 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 from eth_utils.address import is_address
 from sqlalchemy.ext.asyncio import AsyncSession
-from web3 import AsyncWeb3
 
 from bot.config import (chain_id_to_name, chain_id_to_native_token_name,
-                        chain_id_to_rpc_url, evm_native_coin, chain_id_to_tx_scan_url)
+                        chain_id_to_tx_scan_url, evm_native_coin)
 from bot.db.models import EVMSwap
 from bot.db.queries import get_user_by_id
-from bot.keyboards.menuKB import confirm_kb, cancel_kb, swap_from_token_kb, swap_chain_kb, menu_kb
+from bot.keyboards.menuKB import (cancel_kb, confirm_kb, menu_kb,
+                                  swap_chain_kb, swap_from_token_kb)
 from bot.trading.swap import swap
 from bot.utils.balances import fetch_erc20_balances, get_balance
 from bot.utils.token_details import get_token_decimals
@@ -61,9 +61,10 @@ async def set_chain_id(callback: CallbackQuery, db: AsyncSession, state: FSMCont
 
         if user:
             native_coin_balance = await get_balance(chain_id, user.evm_wallet.address, evm_native_coin)
+            formatted_balance = f"{round(native_coin_balance / 1e18, 12):.12f}"
             erc_balances_list, erc_balances_string = await fetch_erc20_balances(user.evm_wallet.address, chain_id)
             await callback.message.answer(
-                text=f"Choose a token from the list or send its contract address:\n\n{native_token_name}: {round(native_coin_balance/(1e18), 10)}\n{html.code(evm_native_coin)}{erc_balances_string}",
+                text=f"Choose a token from the list or send its contract address:\n\n{native_token_name}: {formatted_balance}\n{html.code(evm_native_coin)}{erc_balances_string}",
                 reply_markup=swap_from_token_kb(native_token_name, erc_balances_list)
             )
             await state.update_data(chain_id=chain_id)

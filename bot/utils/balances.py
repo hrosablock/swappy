@@ -75,7 +75,8 @@ async def fetch_erc20_balances(address:str, chain_id:int) -> list:
                         continue
                     
                     balance = int(balance)
-                    formatted_balance = round(balance / (10 ** decimals), decimals)
+                    blnce = round(balance / (10 ** decimals), decimals)
+                    formatted_balance = f"{blnce:.{decimals}f}"
                     
                     display_name = f"{name}({symbol})" if name and symbol else name or symbol
 

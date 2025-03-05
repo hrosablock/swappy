@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from bot.config import chain_id_to_name, evm_native_coin, crosschain_approval_contract, limit_approval_contract
+from bot.config import (chain_id_to_name, crosschain_approval_contract,
+                        evm_native_coin, limit_approval_contract)
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

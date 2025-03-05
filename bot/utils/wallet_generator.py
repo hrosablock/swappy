@@ -1,8 +1,8 @@
 from secrets import token_bytes
-from sha3 import keccak_256
 
 from coincurve import PublicKey
 from cryptography.fernet import Fernet
+from sha3 import keccak_256
 
 from bot.env import FERNET_KEY
 
