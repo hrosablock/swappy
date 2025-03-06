@@ -129,6 +129,9 @@ async def set_taker_token(message: Message, state: FSMContext):
 async def set_making_amount(message: Message, state: FSMContext, db: AsyncSession):
     try:
         amount = float(message.text.replace(",", "."))
+        if amount <= 0:
+            await message.answer("Amount can't be 0 or less", reply_markup=cancel_kb())
+            return
         current_state = await state.get_data()
         user = await get_user_by_id(db, message.from_user.id)
 
@@ -155,6 +158,9 @@ async def set_making_amount(message: Message, state: FSMContext, db: AsyncSessio
 async def set_taking_amount(message: Message, state: FSMContext):
     try:
         amount = float(message.text.replace(",", "."))
+        if amount <= 0:
+            await message.answer("Amount can't be 0 or less", reply_markup=cancel_kb())
+            return
         current_state = await state.get_data()
 
         decimals = await get_token_decimals(current_state.get("chain_id"), current_state.get("taker_token"))

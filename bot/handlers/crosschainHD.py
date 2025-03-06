@@ -150,6 +150,9 @@ async def set_to_token(message: Message, state: FSMContext):
 async def set_amount(message: Message, state: FSMContext, db: AsyncSession) -> None:
     try:
         amount = float(message.text.replace(",", "."))
+        if amount <= 0:
+            await message.answer("Amount can't be 0 or less", reply_markup=cancel_kb())
+            return
         current_state = await state.get_data()
         user = await get_user_by_id(db, message.from_user.id)
 
