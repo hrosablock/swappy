@@ -4,10 +4,19 @@ import aiohttp
 from eth_utils import to_checksum_address
 from web3 import AsyncWeb3
 
-from bot.config import (approval_contract_addresses, chain_id_to_rpc_url,
-                        evm_native_coin, gas_ratio)
-from bot.utils.dex import (decrypt_key, get_aggregator_request_url,
-                           get_headers_params, send_approve_tx, get_transaction_count)
+from bot.config import (
+    approval_contract_addresses,
+    chain_id_to_rpc_url,
+    evm_native_coin,
+    gas_ratio,
+)
+from bot.utils.dex import (
+    decrypt_key,
+    get_aggregator_request_url,
+    get_headers_params,
+    send_approve_tx,
+    get_transaction_count,
+)
 
 
 async def get_swap_data(session, req_body, headers):
@@ -20,10 +29,19 @@ async def get_swap_data(session, req_body, headers):
         return await response.json()
 
 
-async def swap(encrypted_key: str, chain_id: int, amount: str, from_token: str, to_token: str, wallet_address: str, price_impact_percent: int = 10, slippage_percent : int = 1):
+async def swap(
+    encrypted_key: str,
+    chain_id: int,
+    amount: str,
+    from_token: str,
+    to_token: str,
+    wallet_address: str,
+    price_impact_percent: int = 10,
+    slippage_percent: int = 1,
+):
     try:
-        price_impact = str(round(price_impact_percent/100, 3))
-        slippage = str(round(slippage_percent/100, 3))
+        price_impact = str(round(price_impact_percent / 100, 3))
+        slippage = str(round(slippage_percent / 100, 3))
 
         from_token = to_checksum_address(from_token)
         to_token = to_checksum_address(to_token)
@@ -46,19 +64,33 @@ async def swap(encrypted_key: str, chain_id: int, amount: str, from_token: str, 
             "toTokenAddress": to_token,
             "slippage": slippage,
             "userWalletAddress": wallet_address,
-            "priceImpactProtectionPercentage": price_impact
+            "priceImpactProtectionPercentage": price_impact,
         }
 
         async with aiohttp.ClientSession() as session:
             if from_token.lower() != evm_native_coin.lower():
-                approve_res = await send_approve_tx(session, web3, wallet_address, spender_address, from_token, amount, private_key, rpc_url, chain_id)
-                nonce = await get_transaction_count(wallet_address, "pending", rpc_url, web3)
+                approve_res = await send_approve_tx(
+                    session,
+                    web3,
+                    wallet_address,
+                    spender_address,
+                    from_token,
+                    amount,
+                    private_key,
+                    rpc_url,
+                    chain_id,
+                )
+                nonce = await get_transaction_count(
+                    wallet_address, "pending", rpc_url, web3
+                )
                 approve_nonce = approve_res.get("nonce")
 
                 if approve_res.get("ok") and nonce <= approve_nonce:
                     nonce = approve_nonce + 1
             else:
-                nonce = await get_transaction_count(wallet_address, "pending", rpc_url, web3)
+                nonce = await get_transaction_count(
+                    wallet_address, "pending", rpc_url, web3
+                )
 
             headers = get_headers_params("GET", "aggregator", "/swap", req_body)
             swap_data = await get_swap_data(session, req_body, headers)
@@ -70,7 +102,7 @@ async def swap(encrypted_key: str, chain_id: int, amount: str, from_token: str, 
                 "to": swap_tx_info["to"],
                 "value": int(swap_tx_info["value"]),
                 "nonce": nonce,
-                "chainId": chain_id
+                "chainId": chain_id,
             }
 
             signed_tx = web3.eth.account.sign_transaction(tx_object, private_key)

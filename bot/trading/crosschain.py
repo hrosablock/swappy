@@ -5,13 +5,22 @@ import aiohttp
 from eth_utils import to_checksum_address
 from web3 import AsyncWeb3
 
-from bot.config import (chain_id_to_rpc_url, crosschain_approval_contract,
-                        evm_native_coin, gas_ratio)
-from bot.utils.dex import (decrypt_key, get_crosschain_request_url,
-                           get_headers_params, send_approve_tx, get_transaction_count)
+from bot.config import (
+    chain_id_to_rpc_url,
+    crosschain_approval_contract,
+    evm_native_coin,
+    gas_ratio,
+)
+from bot.utils.dex import (
+    decrypt_key,
+    get_crosschain_request_url,
+    get_headers_params,
+    send_approve_tx,
+    get_transaction_count,
+)
 
 
-async def get_supported_chain(from_chain_id: int, to_chain_id: int=None):
+async def get_supported_chain(from_chain_id: int, to_chain_id: int = None):
     try:
         params = {"chainId": str(from_chain_id)}
         url = get_crosschain_request_url("/supported/chain", params)
@@ -29,7 +38,15 @@ async def get_supported_chain(from_chain_id: int, to_chain_id: int=None):
         return None
 
 
-async def get_quote_and_bridge_id(from_chain_id: int, to_chain_id: int, from_token: str, to_token: str, amount: str, slippage: float, max_price_impact: float):
+async def get_quote_and_bridge_id(
+    from_chain_id: int,
+    to_chain_id: int,
+    from_token: str,
+    to_token: str,
+    amount: str,
+    slippage: float,
+    max_price_impact: float,
+):
     try:
         params = {
             "fromChainId": str(from_chain_id),
@@ -46,7 +63,12 @@ async def get_quote_and_bridge_id(from_chain_id: int, to_chain_id: int, from_tok
             async with session.get(url, headers=headers) as response:
                 data = await response.json()
                 if data.get("code") == "0" and "data" in data and data["data"]:
-                    bridge_id = data["data"][0].get("routerList", [{}])[0].get("router", {}).get("bridgeId")
+                    bridge_id = (
+                        data["data"][0]
+                        .get("routerList", [{}])[0]
+                        .get("router", {})
+                        .get("bridgeId")
+                    )
                     return {"ok": True, "bridge_id": bridge_id}
                 return {"ok": False, "message": data.get("msg", "Unknown error")}
     except Exception as e:
@@ -54,10 +76,20 @@ async def get_quote_and_bridge_id(from_chain_id: int, to_chain_id: int, from_tok
         return {"ok": False, "message": "Unknown error"}
 
 
-async def crosschain_swap(encrypted_key: str, from_chain_id: int, to_chain_id: int, amount: str, from_token: str, to_token: str, user_wallet: str, slippage_percent: float, max_price_impact_percent: float = 5.0):
+async def crosschain_swap(
+    encrypted_key: str,
+    from_chain_id: int,
+    to_chain_id: int,
+    amount: str,
+    from_token: str,
+    to_token: str,
+    user_wallet: str,
+    slippage_percent: float,
+    max_price_impact_percent: float = 5.0,
+):
     try:
-        max_price_impact = round(max_price_impact_percent/100, 3)
-        slippage = round(slippage_percent/100, 3)
+        max_price_impact = round(max_price_impact_percent / 100, 3)
+        slippage = round(slippage_percent / 100, 3)
         from_token = to_checksum_address(from_token)
         to_token = to_checksum_address(to_token)
         user_wallet = to_checksum_address(user_wallet)
@@ -71,14 +103,36 @@ async def crosschain_swap(encrypted_key: str, from_chain_id: int, to_chain_id: i
             raise ConnectionError("Web3 provider not connected")
         async with aiohttp.ClientSession() as session:
             if from_token.lower() != evm_native_coin.lower():
-                approve_res = await send_approve_tx(session, web3, user_wallet, spender_address, from_token, amount, private_key, rpc_url, from_chain_id)
-                nonce = await get_transaction_count(user_wallet, "pending", rpc_url, web3)
+                approve_res = await send_approve_tx(
+                    session,
+                    web3,
+                    user_wallet,
+                    spender_address,
+                    from_token,
+                    amount,
+                    private_key,
+                    rpc_url,
+                    from_chain_id,
+                )
+                nonce = await get_transaction_count(
+                    user_wallet, "pending", rpc_url, web3
+                )
                 approve_nonce = approve_res.get("nonce")
                 if approve_res.get("ok") and nonce <= approve_nonce:
                     nonce = approve_nonce + 1
             else:
-                nonce = await get_transaction_count(user_wallet, "pending", rpc_url, web3)
-            quote_data = await get_quote_and_bridge_id(from_chain_id, to_chain_id, from_token, to_token, amount, slippage, max_price_impact)
+                nonce = await get_transaction_count(
+                    user_wallet, "pending", rpc_url, web3
+                )
+            quote_data = await get_quote_and_bridge_id(
+                from_chain_id,
+                to_chain_id,
+                from_token,
+                to_token,
+                amount,
+                slippage,
+                max_price_impact,
+            )
             if not quote_data.get("ok"):
                 return quote_data
             bridge_id = quote_data.get("bridge_id")
@@ -90,14 +144,17 @@ async def crosschain_swap(encrypted_key: str, from_chain_id: int, to_chain_id: i
                 "amount": amount,
                 "slippage": str(slippage),
                 "userWalletAddress": user_wallet,
-                "bridgeId": bridge_id
+                "bridgeId": bridge_id,
             }
             headers = get_headers_params("GET", "cross-chain", "/build-tx", swap_params)
             url = get_crosschain_request_url("/build-tx", swap_params)
             async with session.get(url, headers=headers) as response:
                 swap_data = await response.json()
                 if swap_data.get("code") != "0" or not swap_data.get("data"):
-                    return {"ok": False, "message": swap_data.get("msg", "Unknown error")}
+                    return {
+                        "ok": False,
+                        "message": swap_data.get("msg", "Unknown error"),
+                    }
             swap_tx_info = swap_data["data"][0]["tx"]
             tx_object = {
                 "data": swap_tx_info["data"],
@@ -106,7 +163,7 @@ async def crosschain_swap(encrypted_key: str, from_chain_id: int, to_chain_id: i
                 "to": swap_tx_info["to"],
                 "value": int(swap_tx_info["value"]),
                 "nonce": nonce,
-                "chainId": from_chain_id
+                "chainId": from_chain_id,
             }
             signed_tx = web3.eth.account.sign_transaction(tx_object, private_key)
             tx_hash = await web3.eth.send_raw_transaction(signed_tx.rawTransaction)

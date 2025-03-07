@@ -2,14 +2,12 @@ import asyncio
 import logging
 import sys
 
-# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 
-# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 from bot.db.database import async_session, engine
 from bot.db.models import Base
 from bot.env import REDIS_URL, TOKEN
@@ -17,14 +15,18 @@ from bot.handlers import crosschainHD, limitHD, menuHD, swapHD, withdrawHD
 from bot.Middlewares.dbMD import DbSessionMiddleware
 from bot.Middlewares.FloodMD import FloodMiddleware
 
-# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-logging.basicConfig(level=logging.DEBUG, stream=sys.stdout, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.DEBUG,
+    stream=sys.stdout,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 logger = logging.getLogger(__name__)
 
 bot = None
+
+
 async def main() -> None:
     global bot
     try:
@@ -33,7 +35,11 @@ async def main() -> None:
 
         storage = RedisStorage.from_url(REDIS_URL)
 
-        bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML), storage=storage)
+        bot = Bot(
+            token=TOKEN,
+            default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+            storage=storage,
+        )
         dp = Dispatcher()
 
         dp.message.filter(F.chat.type == "private")
