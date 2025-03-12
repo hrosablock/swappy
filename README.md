@@ -1,12 +1,17 @@
 # Swappy Bot
 
-Swappy Bot is a bot based on the OKX dex api that allows you to perform trading operations on EVM networks such as:
+Swappy Bot is a bot based on the OKX dex api & StonFI that allows you to perform trading operations on TON & EVM networks such as:
 
-## Features
+## EVM Features
 - Swap
 - Limit order
 - Crosschain(EVM only)
 - Withdraw from wallet
+
+## TON Features
+- TON/Jetton swap
+- Buying the cheapest NFT in the collection
+- TON/Jetton withdrawal
 
 ## Installation
 
