@@ -1,8 +1,10 @@
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
 RUN apt update && apt install -y build-essential python3-dev gcc && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip
 
 COPY requirements.txt .  
 

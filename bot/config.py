@@ -7,7 +7,20 @@ api_base_url = "https://www.okx.com/api/v5/dex"
 
 evm_native_coin = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
+ton_native_coin = "TON"
+
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+
+
+
+
+
+
+
+
+
+
+
 
 gas_ratio = 2.5
 

@@ -4,19 +4,14 @@ import hmac
 import logging
 from datetime import datetime, timezone
 from urllib.parse import urlencode
-import aiohttp
 
+import aiohttp
 from cryptography.fernet import Fernet
 from web3 import AsyncWeb3
 
 from bot.config import allowance_abi, api_base_url, gas_ratio
-from bot.env import (
-    FERNET_KEY,
-    OKX_API_KEY,
-    OKX_PASSPHRASE,
-    OKX_PROJECT_ID,
-    OKX_SECRET_KEY,
-)
+from bot.env import (FERNET_KEY, OKX_API_KEY, OKX_PASSPHRASE, OKX_PROJECT_ID,
+                     OKX_SECRET_KEY)
 
 
 async def get_transaction_count(
@@ -45,6 +40,13 @@ def decrypt_key(key: str):
         return Fernet(FERNET_KEY).decrypt(key).hex()
     except Exception:
         logging.exception("Error decrypting key")
+        raise
+
+def decrypt_mnemonic(mnemonic: str):
+    try:
+        return Fernet(FERNET_KEY).decrypt(mnemonic).decode()
+    except Exception:
+        logging.exception("Error decrypting mnemonic")
         raise
 
 

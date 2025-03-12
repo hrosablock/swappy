@@ -12,18 +12,12 @@ from eth_utils.address import is_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.config import chain_id_to_name, chain_id_to_tx_scan_url
-from bot.db.queries import get_limit_order_by_hash, get_user_by_id
-from bot.keyboards.menuKB import (
-    cancel_kb,
-    confirm_kb,
-    limit_chain_kb,
-    limit_from_token_kb,
-    limit_yes_no_kb,
-    menu_kb,
-)
-from bot.trading.limit import create_limit_order
+from bot.db.queries import get_user_by_id
+from bot.keyboards.menuKB import (cancel_kb, confirm_kb, menu_kb)
+from bot.keyboards.evmKB import (limit_chain_kb, limit_from_token_kb, limit_yes_no_kb)
+from bot.trading.EVM.limit import create_limit_order
 from bot.utils.balances import fetch_erc20_balances, get_balance
-from bot.utils.token_details import get_token_decimals
+from bot.utils.token_details import get_evm_token_decimals
 
 router = Router()
 
@@ -84,7 +78,6 @@ async def set_chain_id(callback: CallbackQuery, db: AsyncSession, state: FSMCont
 async def set_maker_token(callback: CallbackQuery, state: FSMContext):
     try:
         maker_token = callback.data.removeprefix("limit_from_token_")
-        print(maker_token)
 
         if is_address(maker_token):
             await callback.message.answer(
@@ -155,7 +148,7 @@ async def set_making_amount(message: Message, state: FSMContext, db: AsyncSessio
                 user.evm_wallet.address,
                 current_state.get("maker_token"),
             )
-            decimals = await get_token_decimals(
+            decimals = await get_evm_token_decimals(
                 current_state.get("chain_id"), current_state.get("maker_token")
             )
             if current_balance < int(amount * (10**decimals)):
@@ -189,7 +182,7 @@ async def set_taking_amount(message: Message, state: FSMContext):
             return
         current_state = await state.get_data()
 
-        decimals = await get_token_decimals(
+        decimals = await get_evm_token_decimals(
             current_state.get("chain_id"), current_state.get("taker_token")
         )
 
@@ -212,7 +205,7 @@ async def set_min_return(message: Message, state: FSMContext):
         amount = float(message.text.replace(",", "."))
         current_state = await state.get_data()
 
-        decimals = await get_token_decimals(
+        decimals = await get_evm_token_decimals(
             current_state.get("chain_id"), current_state.get("taker_token")
         )
 

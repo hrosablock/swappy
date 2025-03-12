@@ -11,6 +11,8 @@ services:
       - not_network
     expose:
       - "5432"
+    ports:
+      - "5431:5432"
     restart: always
     env_file:
       - .env

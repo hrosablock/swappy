@@ -4,19 +4,11 @@ import aiohttp
 from eth_utils import to_checksum_address
 from web3 import AsyncWeb3
 
-from bot.config import (
-    approval_contract_addresses,
-    chain_id_to_rpc_url,
-    evm_native_coin,
-    gas_ratio,
-)
-from bot.utils.dex import (
-    decrypt_key,
-    get_aggregator_request_url,
-    get_headers_params,
-    send_approve_tx,
-    get_transaction_count,
-)
+from bot.config import (approval_contract_addresses, chain_id_to_rpc_url,
+                        evm_native_coin, gas_ratio)
+from bot.utils.dex import (decrypt_key, get_aggregator_request_url,
+                           get_headers_params, get_transaction_count,
+                           send_approve_tx)
 
 
 async def get_swap_data(session, req_body, headers):

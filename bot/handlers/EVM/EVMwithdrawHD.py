@@ -9,22 +9,14 @@ from aiogram.types import CallbackQuery, Message
 from eth_utils.address import is_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.config import (
-    chain_id_to_native_token_name,
-    chain_id_to_tx_scan_url,
-    evm_native_coin,
-)
+from bot.config import (chain_id_to_native_token_name, chain_id_to_tx_scan_url,
+                        evm_native_coin)
 from bot.db.queries import get_user_by_id
-from bot.keyboards.menuKB import (
-    cancel_kb,
-    confirm_kb,
-    menu_kb,
-    withdraw_chain_kb,
-    withdraw_token_kb,
-)
-from bot.trading.withdraw import send
+from bot.keyboards.menuKB import (cancel_kb, confirm_kb, menu_kb)
+from bot.keyboards.evmKB import (withdraw_chain_kb, withdraw_token_kb)
+from bot.trading.EVM.withdraw import send
 from bot.utils.balances import fetch_erc20_balances, get_balance
-from bot.utils.token_details import get_token_decimals
+from bot.utils.token_details import get_evm_token_decimals
 
 router = Router()
 
@@ -140,7 +132,7 @@ async def set_amount(message: Message, state: FSMContext, db: AsyncSession):
         token_address = current_state.get("token_address")
         user = await get_user_by_id(db, message.from_user.id)
         user_wallet = user.evm_wallet.address
-        decimals = await get_token_decimals(chain_id, token_address)
+        decimals = await get_evm_token_decimals(chain_id, token_address)
 
         balance = await get_balance(chain_id, user_wallet, token_address)
         if balance < int(amount * (10**decimals)):

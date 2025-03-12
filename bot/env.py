@@ -9,6 +9,10 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 MORALIS_API_KEY = os.getenv("MORALIS_KEY")
 
+TONCENTER_API_KEY = os.getenv("TONCENTER_API_KEY")
+
+TONAPI_API_KEY = os.getenv("TONAPI_API_KEY")
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 REDIS_URL = os.getenv("REDIS_URL")

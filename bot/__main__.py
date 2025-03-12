@@ -11,7 +11,9 @@ from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 from bot.db.database import async_session, engine
 from bot.db.models import Base
 from bot.env import REDIS_URL, TOKEN
-from bot.handlers import crosschainHD, limitHD, menuHD, swapHD, withdrawHD
+from bot.handlers import menuHD
+from bot.handlers.EVM import EVMcrosschainHD, EVMlimitHD, EVMswapHD, EVMwithdrawHD
+from bot.handlers.TON import TONswapHD, TONnftHD, TONwithdrawHD
 from bot.Middlewares.dbMD import DbSessionMiddleware
 from bot.Middlewares.FloodMD import FloodMiddleware
 
@@ -50,10 +52,15 @@ async def main() -> None:
         dp.callback_query.middleware(CallbackAnswerMiddleware())
 
         dp.include_router(menuHD.router)
-        dp.include_router(swapHD.router)
-        dp.include_router(limitHD.router)
-        dp.include_router(crosschainHD.router)
-        dp.include_router(withdrawHD.router)
+
+        dp.include_router(EVMswapHD.router)
+        dp.include_router(EVMlimitHD.router)
+        dp.include_router(EVMcrosschainHD.router)
+        dp.include_router(EVMwithdrawHD.router)
+
+        dp.include_router(TONswapHD.router)
+        dp.include_router(TONnftHD.router)
+        dp.include_router(TONwithdrawHD.router)
 
         logger.info("Bot started successfully!")
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())

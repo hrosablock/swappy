@@ -2,18 +2,8 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import (
-    BigInteger,
-    Boolean,
-    CheckConstraint,
-    DateTime,
-    ForeignKey,
-    Index,
-    Numeric,
-    String,
-    func,
-    text,
-)
+from sqlalchemy import (BigInteger, Boolean, CheckConstraint, DateTime,
+                        ForeignKey, Numeric, String, func)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -50,6 +40,14 @@ class User(Base):
     )
     evm_crosschain_swaps: Mapped["EvmCrosschainSwap"] = relationship(
         "EvmCrosschainSwap", back_populates="user", lazy="selectin"
+    )
+
+    ton_wallet: Mapped["TONWallet"] = relationship(
+        "TONWallet", back_populates="user", uselist=False, lazy="joined"
+    )
+
+    ton_swaps: Mapped["TONSwap"] = relationship(
+        "TONSwap", back_populates="user", lazy="selectin"
     )
 
     __table_args__ = (CheckConstraint("id >= 0", name="check_user_id_non_negative"),)
@@ -282,4 +280,78 @@ class EvmCrosschainSwap(Base):
             user_wallet=user_wallet,
             bridge_id=bridge_id,
             tx_hash=tx_hash,
+        )
+
+
+
+
+
+class TONWallet(Base):
+    __tablename__ = "ton_wallets"
+
+    id: Mapped[str] = mapped_column(
+        unique=True,
+        index=True,
+        nullable=False,
+        default=lambda: str(uuid.uuid4()),
+        primary_key=True,
+    )
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id"), unique=True, nullable=False
+    )
+    encrypted_mnemonic: Mapped[str] = mapped_column(String, nullable=False)
+    address: Mapped[str] = mapped_column(String, nullable=False)
+
+    user = relationship("User", back_populates="ton_wallet", lazy="joined")
+
+    __table_args__ = (
+        CheckConstraint("user_id >= 0", name="check_wallet_user_id_non_negative"),
+    )
+
+    @staticmethod
+    def create_wallet(
+        user_id: int, encrypted_mnemonic: str, address: str
+    ) -> "TONWallet":
+        return TONWallet(
+            user_id=user_id,
+            encrypted_mnemonic=encrypted_mnemonic,
+            address=address,
+        )
+
+
+class TONSwap(Base):
+    __tablename__ = "ton_swaps"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id"), nullable=False
+    )
+    amount: Mapped[Numeric] = mapped_column(
+        Numeric(precision=100, scale=0), nullable=False
+    )
+    from_token: Mapped[str] = mapped_column(String, nullable=False)
+    to_token: Mapped[str] = mapped_column(String, nullable=False)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    user = relationship("User", back_populates="ton_swaps", lazy="selectin")
+
+    __table_args__ = (
+        CheckConstraint("user_id >= 0", name="check_swap_user_id_non_negative"),
+        CheckConstraint("amount >= 0.0", name="check_swap_amount_non_negative"),
+    )
+
+    @staticmethod
+    def create_swap(
+        user_id: int,
+        amount: int,
+        from_token: str,
+        to_token: str,
+    ) -> "TONSwap":
+        return TONSwap(
+            user_id=user_id,
+            amount=amount,
+            from_token=from_token,
+            to_token=to_token,
         )
