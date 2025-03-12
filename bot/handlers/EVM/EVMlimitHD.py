@@ -10,7 +10,7 @@ from eth_utils.address import is_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.config import chain_id_to_name
-from bot.db.queries import get_user_by_id
+from bot.db.queries import get_user_by_id, registration
 from bot.keyboards.evmKB import limit_chain_kb, limit_from_token_kb, limit_yes_no_kb
 from bot.keyboards.menuKB import cancel_kb, confirm_kb, menu_kb
 from bot.trading.EVM.limit import create_limit_order
@@ -50,7 +50,7 @@ async def set_chain_id(callback: CallbackQuery, db: AsyncSession, state: FSMCont
         if not chain_name:
             await callback.answer(f"Unsupported chain ID: {chain_id}")
             return
-        user = await get_user_by_id(db, callback.from_user.id)
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
 
         if user:
             erc_balances_list, erc_balances_string = await fetch_erc20_balances(
@@ -138,7 +138,7 @@ async def set_making_amount(message: Message, state: FSMContext, db: AsyncSessio
             await message.answer("Amount can't be 0 or less", reply_markup=cancel_kb())
             return
         current_state = await state.get_data()
-        user = await get_user_by_id(db, message.from_user.id)
+        user = await get_user_by_id(db, message.from_user.id) or await registration(db, message.from_user.id, message)
 
         if user:
             current_balance = await get_balance(
@@ -270,7 +270,7 @@ async def confirm_limit_order(
     callback: CallbackQuery, state: FSMContext, db: AsyncSession
 ) -> None:
     try:
-        user = await get_user_by_id(db, callback.from_user.id)
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
         if user:
             order_data = await state.get_data()
             order_hash = await create_limit_order(
@@ -311,7 +311,7 @@ async def confirm_limit_order(
 #         hash = userinput[0]
 
 #         order = await get_limit_order_by_hash(db, message.from_user.id, hash)
-#         user = await get_user_by_id(db, message.from_user.id)
+#         user = await get_user_by_id(db, message.from_user.id) or await registration(db, message.from_user.id, message)
 #         if not user:
 #             await message.answer("User not found")
 #             return

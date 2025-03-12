@@ -14,7 +14,7 @@ from bot.config import (
     chain_id_to_tx_scan_url,
     evm_native_coin,
 )
-from bot.db.queries import get_user_by_id
+from bot.db.queries import get_user_by_id, registration
 from bot.keyboards.evmKB import withdraw_chain_kb, withdraw_token_kb
 from bot.keyboards.menuKB import cancel_kb, confirm_kb, menu_kb
 from bot.trading.EVM.withdraw import send
@@ -56,7 +56,7 @@ async def set_chain_id(callback: CallbackQuery, db: AsyncSession, state: FSMCont
             await callback.answer(f"Unsupported chain ID: {chain_id}")
             return
 
-        user = await get_user_by_id(db, callback.from_user.id)
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
         if not user:
             await callback.answer("User not found.")
             return
@@ -133,7 +133,7 @@ async def set_amount(message: Message, state: FSMContext, db: AsyncSession):
         current_state = await state.get_data()
         chain_id = current_state.get("chain_id")
         token_address = current_state.get("token_address")
-        user = await get_user_by_id(db, message.from_user.id)
+        user = await get_user_by_id(db, message.from_user.id) or await registration(db, message.from_user.id, message)
         user_wallet = user.evm_wallet.address
         decimals = await get_evm_token_decimals(chain_id, token_address)
 
@@ -178,7 +178,7 @@ async def confirm_withdraw(
         chain_id = current_state.get("chain_id")
         token_address = current_state.get("token_address")
         amount = current_state.get("amount")
-        user = await get_user_by_id(db, callback.from_user.id)
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
         encrypted_key = user.evm_wallet.encrypted_private_key
         to_wallet = current_state.get("recipient")
 

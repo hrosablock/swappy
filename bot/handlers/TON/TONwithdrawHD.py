@@ -8,7 +8,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.db.queries import get_user_by_id
+from bot.db.queries import get_user_by_id, registration
 from bot.keyboards.menuKB import cancel_kb, confirm_kb, menu_kb
 from bot.keyboards.tonKB import ton_withdraw_token_kb
 from bot.trading.TON.withdraw import send, send_jetton
@@ -31,7 +31,7 @@ class TON_WithdrawState(StatesGroup):
 async def start_withdraw(
     callback: CallbackQuery, state: FSMContext, db: AsyncSession
 ) -> None:
-    user = await get_user_by_id(db, callback.from_user.id)
+    user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
 
     if user:
         ton_balance = await get_ton_balance(
@@ -100,7 +100,7 @@ async def set_destination(message: Message, state: FSMContext):
 
 
 @router.message(TON_WithdrawState.amount, F.text.regexp(re.compile(r"^\d+([.,]\d+)?$")))
-async def set_amount(message: Message, state: FSMContext, db: AsyncSession):
+async def set_amount(message: Message, state: FSMContext):
     try:
         amount = float(message.text.replace(",", "."))
         if amount <= 0:
@@ -120,10 +120,7 @@ async def confirm_withdraw(
     callback: CallbackQuery, state: FSMContext, db: AsyncSession
 ) -> None:
     try:
-        user = await get_user_by_id(db, callback.from_user.id)
-        if not user:
-            await callback.answer("User not found")
-            return
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
 
         withdraw_data = await state.get_data()
         token = withdraw_data.get("token")

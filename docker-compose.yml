@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./db:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - not_network
     expose:
@@ -44,3 +44,6 @@ services:
 networks:
   not_network:
     driver: bridge
+
+volumes:
+  postgres_data:

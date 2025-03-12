@@ -17,7 +17,7 @@ from bot.config import (
     evm_native_coin,
 )
 from bot.db.models import EvmCrosschainSwap
-from bot.db.queries import get_user_by_id
+from bot.db.queries import get_user_by_id, registration
 from bot.keyboards.evmKB import (
     crosschain_from_chain_kb,
     crosschain_to_chain_kb,
@@ -95,7 +95,7 @@ async def set_to_chain(
         if not native_token_name:
             await callback.answer(f"Unsupported chain ID: {from_chain}")
             return
-        user = await get_user_by_id(db, callback.from_user.id)
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
 
         if user:
             native_coin_balance = await get_balance(
@@ -187,7 +187,7 @@ async def set_amount(message: Message, state: FSMContext, db: AsyncSession) -> N
             await message.answer("Amount can't be 0 or less", reply_markup=cancel_kb())
             return
         current_state = await state.get_data()
-        user = await get_user_by_id(db, message.from_user.id)
+        user = await get_user_by_id(db, message.from_user.id) or await registration(db, message.from_user.id, message)
 
         if user:
             current_balance = await get_balance(
@@ -268,7 +268,7 @@ async def confirm_crosschain_swap(
     callback: CallbackQuery, state: FSMContext, db: AsyncSession
 ) -> None:
     try:
-        user = await get_user_by_id(db, callback.from_user.id)
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
         if user:
             swap_data = await state.get_data()
             tx_hash = await crosschain_swap(

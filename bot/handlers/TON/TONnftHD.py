@@ -2,13 +2,13 @@ import logging
 import re
 import sys
 
-from aiogram import F, Router, html
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.db.queries import get_user_by_id
+from bot.db.queries import get_user_by_id, registration
 from bot.keyboards.menuKB import cancel_kb, confirm_kb, menu_kb
 from bot.trading.TON.ton_nft import buy_nft
 from bot.utils.balances import get_ton_balance
@@ -27,7 +27,7 @@ class TON_NftState(StatesGroup):
 async def start_nft_purchase(
     callback: CallbackQuery, state: FSMContext, db: AsyncSession
 ) -> None:
-    user = await get_user_by_id(db, callback.from_user.id)
+    user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
 
     if user:
         ton_balance = await get_ton_balance(
@@ -72,7 +72,7 @@ async def set_price(message: Message, state: FSMContext, db: AsyncSession):
             await message.answer("Price can't be 0 or less", reply_markup=cancel_kb())
             return
 
-        user = await get_user_by_id(db, message.from_user.id)
+        user = await get_user_by_id(db, message.from_user.id) or await registration(db, message.from_user.id, message)
         if not user:
             await message.answer("User not found", reply_markup=cancel_kb())
             return
@@ -103,7 +103,7 @@ async def confirm_purchase(
     callback: CallbackQuery, state: FSMContext, db: AsyncSession
 ) -> None:
     try:
-        user = await get_user_by_id(db, callback.from_user.id)
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
         if not user:
             await callback.answer("User not found")
             return

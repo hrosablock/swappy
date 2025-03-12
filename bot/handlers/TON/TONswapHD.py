@@ -6,12 +6,11 @@ from aiogram import F, Router, html
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
-from eth_utils.address import is_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.config import ton_native_coin
 from bot.db.models import TONSwap
-from bot.db.queries import get_user_by_id
+from bot.db.queries import get_user_by_id, registration
 from bot.keyboards.menuKB import cancel_kb, confirm_kb, menu_kb
 from bot.keyboards.tonKB import ton_swap_from_token_kb
 from bot.trading.TON.swap import jetton_to_jetton, jetton_to_ton, ton_to_jetton
@@ -38,7 +37,7 @@ async def start_swap(
 ) -> None:
     try:
 
-        user = await get_user_by_id(db, callback.from_user.id)
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
 
         if user:
             ton_balance = await get_ton_balance(
@@ -133,7 +132,7 @@ async def set_amount(message: Message, state: FSMContext, db: AsyncSession) -> N
             return
 
         current_state = await state.get_data()
-        user = await get_user_by_id(db, message.from_user.id)
+        user = await get_user_by_id(db, message.from_user.id) or await registration(db, message.from_user.id, message)
 
         if not user:
             await message.answer("User not found", reply_markup=cancel_kb())
@@ -189,7 +188,7 @@ async def confirm_swap(
     callback: CallbackQuery, state: FSMContext, db: AsyncSession
 ) -> None:
     try:
-        user = await get_user_by_id(db, callback.from_user.id)
+        user = await get_user_by_id(db, callback.from_user.id) or await registration(db, callback.from_user.id, callback.message)
         if user:
             swap_data = await state.get_data()
             if (
