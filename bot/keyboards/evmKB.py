@@ -1,7 +1,11 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from bot.config import (chain_id_to_name, crosschain_approval_contract,
-                        evm_native_coin, limit_approval_contract)
+from bot.config import (
+    chain_id_to_name,
+    crosschain_approval_contract,
+    evm_native_coin,
+    limit_approval_contract,
+)
 
 
 def evm_menu_kb():
@@ -20,6 +24,7 @@ def evm_menu_kb():
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
+
 
 def swap_chain_kb():
     buttons = [

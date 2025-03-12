@@ -13,8 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.config import chain_id_to_name, chain_id_to_tx_scan_url
 from bot.db.queries import get_user_by_id
-from bot.keyboards.menuKB import (cancel_kb, confirm_kb, menu_kb)
-from bot.keyboards.evmKB import (limit_chain_kb, limit_from_token_kb, limit_yes_no_kb)
+from bot.keyboards.evmKB import limit_chain_kb, limit_from_token_kb, limit_yes_no_kb
+from bot.keyboards.menuKB import cancel_kb, confirm_kb, menu_kb
 from bot.trading.EVM.limit import create_limit_order
 from bot.utils.balances import fetch_erc20_balances, get_balance
 from bot.utils.token_details import get_evm_token_decimals

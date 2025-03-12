@@ -12,10 +12,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from bot.config import ton_native_coin
 from bot.db.models import TONSwap
 from bot.db.queries import get_user_by_id
-from bot.keyboards.menuKB import (cancel_kb, confirm_kb, menu_kb)
+from bot.keyboards.menuKB import cancel_kb, confirm_kb, menu_kb
 from bot.keyboards.tonKB import ton_swap_from_token_kb
-from bot.trading.TON.swap import ton_to_jetton, jetton_to_jetton, jetton_to_ton
-from bot.utils.balances import get_ton_balance, fetch_jetton_balances, get_jetton_balance
+from bot.trading.TON.swap import jetton_to_jetton, jetton_to_ton, ton_to_jetton
+from bot.utils.balances import (
+    fetch_jetton_balances,
+    get_jetton_balance,
+    get_ton_balance,
+)
 from bot.utils.token_details import get_jetton_decimals, ton_address_validation
 
 router = Router()
@@ -29,20 +33,28 @@ class TONSwapState(StatesGroup):
 
 
 @router.callback_query(F.data == "ton_swap")
-async def start_swap(callback: CallbackQuery, state: FSMContext, db: AsyncSession) -> None:
+async def start_swap(
+    callback: CallbackQuery, state: FSMContext, db: AsyncSession
+) -> None:
     try:
 
         user = await get_user_by_id(db, callback.from_user.id)
 
         if user:
-            ton_balance = await get_ton_balance(user.ton_wallet.address, user.ton_wallet.encrypted_mnemonic)
+            ton_balance = await get_ton_balance(
+                user.ton_wallet.address, user.ton_wallet.encrypted_mnemonic
+            )
             if not ton_balance.get("ok"):
-                await callback.message.answer(ton_balance.get("message"), reply_markup=menu_kb())
+                await callback.message.answer(
+                    ton_balance.get("message"), reply_markup=menu_kb()
+                )
                 return
-            
+
             formatted_balance = float(ton_balance.get("balance") / 10**9)
 
-            jetton_balances, jetton_balances_string = await fetch_jetton_balances(user.ton_wallet.address)
+            jetton_balances, jetton_balances_string = await fetch_jetton_balances(
+                user.ton_wallet.address
+            )
             await callback.message.answer(
                 text=f"Let's swap!\nFirst, select a token from the list or send its contract address:\n\nTON: {formatted_balance}\n{jetton_balances_string}",
                 reply_markup=ton_swap_from_token_kb(jetton_balances),
@@ -54,7 +66,6 @@ async def start_swap(callback: CallbackQuery, state: FSMContext, db: AsyncSessio
     except Exception as e:
         await callback.message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
-
 
 
 @router.callback_query(TONSwapState.from_token, F.data.startswith("TSFT_"))
@@ -76,8 +87,6 @@ async def set_from_token(callback: CallbackQuery, state: FSMContext):
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
 
 
-
-
 @router.message(TONSwapState.from_token)
 async def set_from_token(message: Message, state: FSMContext):
     try:
@@ -97,7 +106,6 @@ async def set_from_token(message: Message, state: FSMContext):
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
 
 
-
 @router.message(TONSwapState.to_token)
 async def set_to_token(message: Message, state: FSMContext):
     try:
@@ -114,7 +122,6 @@ async def set_to_token(message: Message, state: FSMContext):
     except Exception as e:
         await message.answer("Something went wrong.", reply_markup=cancel_kb())
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
-
 
 
 @router.message(TONSwapState.amount, F.text.regexp(re.compile(r"^\d+([.,]\d+)?$")))
@@ -138,14 +145,20 @@ async def set_amount(message: Message, state: FSMContext, db: AsyncSession) -> N
             return
 
         if from_token.upper() == ton_native_coin:
-            balance_data = await get_ton_balance(user.ton_wallet.address, user.ton_wallet.encrypted_mnemonic)
+            balance_data = await get_ton_balance(
+                user.ton_wallet.address, user.ton_wallet.encrypted_mnemonic
+            )
             if not balance_data.get("ok"):
-                await message.answer(balance_data.get("message"), reply_markup=menu_kb())
+                await message.answer(
+                    balance_data.get("message"), reply_markup=menu_kb()
+                )
                 return
             current_balance = balance_data.get("balance", 0)
             decimals = 9
         elif ton_address_validation(from_token):
-            current_balance = await get_jetton_balance(user.ton_wallet.address, from_token) or 0
+            current_balance = (
+                await get_jetton_balance(user.ton_wallet.address, from_token) or 0
+            )
             decimals = await get_jetton_decimals(from_token) or 9
         else:
             await message.answer("Address is incorrect", reply_markup=cancel_kb())
@@ -154,7 +167,10 @@ async def set_amount(message: Message, state: FSMContext, db: AsyncSession) -> N
         amount_scaled = int(amount * (10**decimals))
 
         if current_balance < amount_scaled:
-            await message.answer("Your balance doesn't match with your expectations", reply_markup=cancel_kb())
+            await message.answer(
+                "Your balance doesn't match with your expectations",
+                reply_markup=cancel_kb(),
+            )
         else:
             await message.answer(
                 "Now, confirm the swap",
@@ -168,7 +184,6 @@ async def set_amount(message: Message, state: FSMContext, db: AsyncSession) -> N
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
 
 
-
 @router.callback_query(TONSwapState.confirm, F.data == "confirm")
 async def confirm_swap(
     callback: CallbackQuery, state: FSMContext, db: AsyncSession
@@ -177,7 +192,10 @@ async def confirm_swap(
         user = await get_user_by_id(db, callback.from_user.id)
         if user:
             swap_data = await state.get_data()
-            if swap_data.get("from_token").upper() != ton_native_coin and swap_data.get("to_token").upper() != ton_native_coin:
+            if (
+                swap_data.get("from_token").upper() != ton_native_coin
+                and swap_data.get("to_token").upper() != ton_native_coin
+            ):
                 tx_hash = await jetton_to_jetton(
                     encrypted_mnemonic=user.ton_wallet.encrypted_mnemonic,
                     from_token=swap_data.get("from_token"),

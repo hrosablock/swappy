@@ -4,15 +4,15 @@ import aiohttp
 from aiogram import html
 from async_lru import alru_cache
 from eth_utils import to_checksum_address
+from pytoniq import LiteClient, WalletV4R2
 from redis.asyncio import Redis
-from web3 import AsyncWeb3
-from pytoniq import WalletV4R2, LiteClient
-from tonutils.jetton import JettonMaster, JettonWallet
 from tonutils.client import ToncenterClient
+from tonutils.jetton import JettonMaster, JettonWallet
+from web3 import AsyncWeb3
 
-from bot.utils.dex import decrypt_mnemonic
 from bot.config import chain_id_to_name, chain_id_to_rpc_url, evm_native_coin
 from bot.env import MORALIS_API_KEY, REDIS_URL, TONCENTER_API_KEY
+from bot.utils.dex import decrypt_mnemonic
 
 redis = Redis.from_url(REDIS_URL, decode_responses=True)
 
@@ -153,29 +153,31 @@ async def get_ton_balance(address: str, encrypted_mnemonic: str) -> dict:
                 if status == "uninit":
                     if balance > 250_000_000:
                         mnemonic = decrypt_mnemonic(encrypted_mnemonic).split()
-                        client = LiteClient.from_mainnet_config(ls_i=2, trust_level=2, timeout=15)
+                        client = LiteClient.from_mainnet_config(
+                            ls_i=2, trust_level=2, timeout=15
+                        )
                         await client.connect()
-                        wallet = await WalletV4R2.from_mnemonic(provider=client, mnemonics=mnemonic)
+                        wallet = await WalletV4R2.from_mnemonic(
+                            provider=client, mnemonics=mnemonic
+                        )
                         await wallet.deploy_via_external()
                         await client.close()
                         return {
                             "ok": False,
-                            "message": "Account uninitialized but has sufficient balance. Deploy try. Try swap again in 2 minutes."
+                            "message": "Account uninitialized but has sufficient balance. Deploy try. Try swap again in 2 minutes.",
                         }
                     else:
                         return {
                             "ok": False,
-                            "message": "Account uninitialized and/or balance is too low."
+                            "message": "Account uninitialized and/or balance is too low.",
                         }
 
                 return {"ok": True, "balance": balance}
     except Exception as e:
-        logging.exception(
-            f"Failed to fetch TON balance for {address} : {e}"
-        )
+        logging.exception(f"Failed to fetch TON balance for {address} : {e}")
         return {
             "ok": False,
-            "message": "Problem fetching TON balance. Please try again later."
+            "message": "Problem fetching TON balance. Please try again later.",
         }
 
 
@@ -196,7 +198,6 @@ async def get_jetton_balance(owner, jetton_master) -> None:
     return jetton_wallet_data.balance
 
 
-
 @alru_cache(maxsize=5000, ttl=30)
 async def fetch_jetton_balances(owner_address: str) -> tuple:
     try:
@@ -205,7 +206,9 @@ async def fetch_jetton_balances(owner_address: str) -> tuple:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 if response.status != 200:
-                    raise Exception(f"HTTP Error {response.status}: {await response.text()}")
+                    raise Exception(
+                        f"HTTP Error {response.status}: {await response.text()}"
+                    )
 
                 data = await response.json()
                 jetton_wallets = data.get("jetton_wallets", [])
@@ -220,11 +223,20 @@ async def fetch_jetton_balances(owner_address: str) -> tuple:
                 for wallet in jetton_wallets:
                     raw_address = wallet.get("jetton")
                     balance = wallet.get("balance")
-                    if not raw_address or not balance or not balance.isdigit() or int(balance) <= 0:
+                    if (
+                        not raw_address
+                        or not balance
+                        or not balance.isdigit()
+                        or int(balance) <= 0
+                    ):
                         continue
 
-                    token_address = address_book.get(raw_address, {}).get("user_friendly", raw_address)
-                    token_metadata = metadata.get(raw_address, {}).get("token_info", [{}])[0]
+                    token_address = address_book.get(raw_address, {}).get(
+                        "user_friendly", raw_address
+                    )
+                    token_metadata = metadata.get(raw_address, {}).get(
+                        "token_info", [{}]
+                    )[0]
                     name = token_metadata.get("name", "")
                     symbol = token_metadata.get("symbol", "")
                     decimals = int(token_metadata.get("extra", {}).get("decimals", "0"))
@@ -236,7 +248,9 @@ async def fetch_jetton_balances(owner_address: str) -> tuple:
                     blnce = round(balance / (10**decimals), decimals)
                     formatted_balance = f"{blnce:.{decimals}f}"
 
-                    display_name = f"{name}({symbol})" if name and symbol else name or symbol
+                    display_name = (
+                        f"{name}({symbol})" if name and symbol else name or symbol
+                    )
 
                     result.append(
                         {
@@ -246,7 +260,9 @@ async def fetch_jetton_balances(owner_address: str) -> tuple:
                             "decimals": decimals,
                         }
                     )
-                    formatted_result += f"\n\n{display_name}: {formatted_balance}   \n{token_address}"
+                    formatted_result += (
+                        f"\n\n{display_name}: {formatted_balance}   \n{token_address}"
+                    )
 
                 return result, formatted_result
 

@@ -12,16 +12,6 @@ ton_native_coin = "TON"
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 
-
-
-
-
-
-
-
-
-
-
 gas_ratio = 2.5
 
 

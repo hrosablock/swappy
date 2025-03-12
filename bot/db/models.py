@@ -2,8 +2,16 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import (BigInteger, Boolean, CheckConstraint, DateTime,
-                        ForeignKey, Numeric, String, func)
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Numeric,
+    String,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -281,9 +289,6 @@ class EvmCrosschainSwap(Base):
             bridge_id=bridge_id,
             tx_hash=tx_hash,
         )
-
-
-
 
 
 class TONWallet(Base):

@@ -6,8 +6,11 @@ from pytoniq import Address
 from redis.asyncio import Redis
 from web3 import AsyncWeb3
 
-from bot.config import (chain_id_to_native_token_name, chain_id_to_rpc_url,
-                        evm_native_coin)
+from bot.config import (
+    chain_id_to_native_token_name,
+    chain_id_to_rpc_url,
+    evm_native_coin,
+)
 from bot.env import REDIS_URL, TONCENTER_API_KEY
 
 redis = Redis.from_url(REDIS_URL, decode_responses=True)
@@ -98,7 +101,6 @@ async def get_token_name(chain_id: int, token_address: str) -> str:
         raise
 
 
-
 @alru_cache(maxsize=5000)
 async def get_jetton_decimals(jetton_address: str):
     try:
@@ -107,7 +109,9 @@ async def get_jetton_decimals(jetton_address: str):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 if response.status != 200:
-                    raise Exception(f"HTTP Error {response.status}: {await response.text()}")
+                    raise Exception(
+                        f"HTTP Error {response.status}: {await response.text()}"
+                    )
 
                 try:
                     data = await response.json()
@@ -116,7 +120,9 @@ async def get_jetton_decimals(jetton_address: str):
 
                 jetton_masters = data.get("jetton_masters", [])
                 if not jetton_masters:
-                    raise Exception(f"No jetton data found for address {jetton_address}")
+                    raise Exception(
+                        f"No jetton data found for address {jetton_address}"
+                    )
 
                 return int(jetton_masters[0]["jetton_content"]["decimals"])
     except Exception:

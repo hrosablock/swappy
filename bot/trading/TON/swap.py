@@ -1,7 +1,7 @@
-import aiohttp
 import logging
 import sys
 
+import aiohttp
 from pytoniq_core import Address
 from tonutils.client import TonapiClient
 from tonutils.jetton.dex.stonfi import StonfiRouterV2
@@ -11,7 +11,6 @@ from tonutils.wallet import WalletV4R2
 
 from bot.env import TONAPI_API_KEY
 from bot.utils.dex import decrypt_mnemonic
-
 
 
 async def get_router_address(from_token: str, to_token: str, amount: int) -> str:
@@ -32,7 +31,9 @@ async def get_router_address(from_token: str, to_token: str, amount: int) -> str
                 return content.get("router_address")
             else:
                 error_text = await response.text()
-                raise Exception(f"Failed to get router address: {response.status}: {error_text}")
+                raise Exception(
+                    f"Failed to get router address: {response.status}: {error_text}"
+                )
 
 
 async def ton_to_jetton(encrypted_mnemonic: str, token: str, amount: int):
@@ -54,7 +55,9 @@ async def ton_to_jetton(encrypted_mnemonic: str, token: str, amount: int):
             min_ask_amount=int(amount * 0.9),
         )
 
-        tx_hash = await wallet.transfer(destination=to, amount=to_amount(value), body=body)
+        tx_hash = await wallet.transfer(
+            destination=to, amount=to_amount(value), body=body
+        )
         return tx_hash
 
     except Exception as e:
@@ -81,7 +84,9 @@ async def jetton_to_ton(encrypted_mnemonic: str, token: str, amount: int):
             min_ask_amount=int(amount * 0.9),
         )
 
-        tx_hash = await wallet.transfer(destination=to, amount=to_amount(value), body=body)
+        tx_hash = await wallet.transfer(
+            destination=to, amount=to_amount(value), body=body
+        )
 
         return tx_hash
 
@@ -90,7 +95,9 @@ async def jetton_to_ton(encrypted_mnemonic: str, token: str, amount: int):
         raise
 
 
-async def jetton_to_jetton(encrypted_mnemonic: str, from_token: str, to_token: str, amount: int):
+async def jetton_to_jetton(
+    encrypted_mnemonic: str, from_token: str, to_token: str, amount: int
+):
     try:
         mnemonic = decrypt_mnemonic(encrypted_mnemonic).split()
         client = TonapiClient(api_key=TONAPI_API_KEY, is_testnet=False)
@@ -110,7 +117,9 @@ async def jetton_to_jetton(encrypted_mnemonic: str, from_token: str, to_token: s
             min_ask_amount=int(amount * 0.9),
         )
 
-        tx_hash = await wallet.transfer(destination=to, amount=to_amount(value), body=body)
+        tx_hash = await wallet.transfer(
+            destination=to, amount=to_amount(value), body=body
+        )
 
         return tx_hash
 

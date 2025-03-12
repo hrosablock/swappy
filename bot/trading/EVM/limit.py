@@ -7,9 +7,15 @@ import aiohttp
 from eth_utils import to_checksum_address
 from web3 import AsyncWeb3
 
-from bot.config import (ZERO_ADDRESS, api_base_url, cancel_limit_abi,
-                        chain_id_to_rpc_url, limit_approval_contract,
-                        limit_dex_router, limit_order_type)
+from bot.config import (
+    ZERO_ADDRESS,
+    api_base_url,
+    cancel_limit_abi,
+    chain_id_to_rpc_url,
+    limit_approval_contract,
+    limit_dex_router,
+    limit_order_type,
+)
 from bot.db.models import EVMLimitOrder
 from bot.utils.dex import decrypt_key, get_headers_params, send_approve_tx
 

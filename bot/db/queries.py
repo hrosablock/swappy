@@ -2,7 +2,7 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from bot.db.models import EVMLimitOrder, User, TONWallet
+from bot.db.models import EVMLimitOrder, TONWallet, User
 
 
 async def get_user_by_id(db: AsyncSession, user_id: int):
@@ -38,4 +38,6 @@ async def get_limit_order_by_hash(db: AsyncSession, user_id: int, hash: str):
 
 
 async def get_ton_wallet_by_id(db: AsyncSession, user_id: int):
-    return (await db.execute(select(TONWallet).where(TONWallet.user_id == user_id))).scalar_one_or_none()
+    return (
+        await db.execute(select(TONWallet).where(TONWallet.user_id == user_id))
+    ).scalar_one_or_none()

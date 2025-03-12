@@ -13,10 +13,9 @@ from bot.db.models import Base
 from bot.env import REDIS_URL, TOKEN
 from bot.handlers import menuHD
 from bot.handlers.EVM import EVMcrosschainHD, EVMlimitHD, EVMswapHD, EVMwithdrawHD
-from bot.handlers.TON import TONswapHD, TONnftHD, TONwithdrawHD
+from bot.handlers.TON import TONnftHD, TONswapHD, TONwithdrawHD
 from bot.Middlewares.dbMD import DbSessionMiddleware
 from bot.Middlewares.FloodMD import FloodMiddleware
-
 
 logging.basicConfig(
     level=logging.DEBUG,

@@ -5,11 +5,19 @@ import aiohttp
 from eth_utils import to_checksum_address
 from web3 import AsyncWeb3
 
-from bot.config import (chain_id_to_rpc_url, crosschain_approval_contract,
-                        evm_native_coin, gas_ratio)
-from bot.utils.dex import (decrypt_key, get_crosschain_request_url,
-                           get_headers_params, get_transaction_count,
-                           send_approve_tx)
+from bot.config import (
+    chain_id_to_rpc_url,
+    crosschain_approval_contract,
+    evm_native_coin,
+    gas_ratio,
+)
+from bot.utils.dex import (
+    decrypt_key,
+    get_crosschain_request_url,
+    get_headers_params,
+    get_transaction_count,
+    send_approve_tx,
+)
 
 
 async def get_supported_chain(from_chain_id: int, to_chain_id: int = None):

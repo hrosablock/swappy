@@ -11,13 +11,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.config import bot_name
 from bot.db.models import EVMWallet, TONWallet, User
-from bot.db.queries import (get_user_by_id, get_user_by_id_for_update,
-                            user_referrals_update, get_ton_wallet_by_id)
-from bot.keyboards.menuKB import main_menu_kb, menu_kb
+from bot.db.queries import (
+    get_ton_wallet_by_id,
+    get_user_by_id,
+    get_user_by_id_for_update,
+    user_referrals_update,
+)
 from bot.keyboards.evmKB import evm_menu_kb
+from bot.keyboards.menuKB import main_menu_kb, menu_kb
 from bot.keyboards.tonKB import ton_menu_kb
-from bot.utils.dex import decrypt_key, decrypt_mnemonic
 from bot.utils.balances import fetch_jetton_balances
+from bot.utils.dex import decrypt_key, decrypt_mnemonic
 from bot.utils.wallet_generator import evm_generator, ton_generator
 
 router = Router()
@@ -40,7 +44,6 @@ async def ref_start_handler(
         user_id = message.from_user.id
         user = await get_user_by_id(db, user_id)
         TON_wallet = await get_ton_wallet_by_id(db, user_id)
-
 
         if user is None:
             if from_ref_id:
@@ -84,7 +87,8 @@ async def ref_start_handler(
             )
             user = await get_user_by_id(db, user_id)
         await message.answer(
-            text=f"Hello, {html.bold(htmlescape(message.from_user.full_name))} and welcome! \nYour EVM wallet address: {html.code(user.evm_wallet.address)}\n Your TON wallet address: {html.code(user.ton_wallet.address)}\n\n<b>Select an option:</b>", reply_markup=main_menu_kb(),
+            text=f"Hello, {html.bold(htmlescape(message.from_user.full_name))} and welcome! \nYour EVM wallet address: {html.code(user.evm_wallet.address)}\n Your TON wallet address: {html.code(user.ton_wallet.address)}\n\n<b>Select an option:</b>",
+            reply_markup=main_menu_kb(),
         )
 
     except Exception as e:
@@ -121,7 +125,7 @@ async def start_handler(message: Message, db: AsyncSession, state: FSMContext) -
                 text=f"Your EVM private key: {html.spoiler(decrypt_key(enc_private_key))} and TON mnemonic: {html.spoiler(decrypt_mnemonic(enc_mnemonic))}"
             )
             user = await get_user_by_id(db, user_id)
-        
+
         elif TON_wallet is None:
             enc_mnemonic, ton_address = await ton_generator()
             first_ton_wallet = TONWallet.create_wallet(
@@ -135,7 +139,8 @@ async def start_handler(message: Message, db: AsyncSession, state: FSMContext) -
             user = await get_user_by_id(db, user_id)
 
         await message.answer(
-            text=f"Hello, {html.bold(htmlescape(message.from_user.full_name))} and welcome! \nYour EVM wallet address: {html.code(user.evm_wallet.address)}\n Your TON wallet address: {html.code(user.ton_wallet.address)}\n\n<b>Select an option:</b>", reply_markup=main_menu_kb(),
+            text=f"Hello, {html.bold(htmlescape(message.from_user.full_name))} and welcome! \nYour EVM wallet address: {html.code(user.evm_wallet.address)}\n Your TON wallet address: {html.code(user.ton_wallet.address)}\n\n<b>Select an option:</b>",
+            reply_markup=main_menu_kb(),
         )
     except Exception as e:
         logging.exception(f"Error in {sys._getframe().f_code.co_name}: {e}")
@@ -171,7 +176,9 @@ async def callback_wallets_ton(callback: CallbackQuery, db: AsyncSession):
     try:
         user = await get_user_by_id(db, callback.from_user.id)
         if user:
-            _, jetton_balances_string = await fetch_jetton_balances(user.evm_wallet.address)
+            _, jetton_balances_string = await fetch_jetton_balances(
+                user.evm_wallet.address
+            )
             await callback.message.answer(
                 f"Your TON wallet address: {html.code(user.ton_wallet.address)}\n{jetton_balances_string}\n\n{html.bold('Select an option:')}",
                 reply_markup=ton_menu_kb(),
@@ -180,7 +187,6 @@ async def callback_wallets_ton(callback: CallbackQuery, db: AsyncSession):
             await callback.answer("User not found")
     except Exception as e:
         logging.exception(f"Error in {sys._getframe().f_code.co_name}")
-
 
 
 @router.callback_query(F.data == "ref")

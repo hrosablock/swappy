@@ -9,9 +9,7 @@ def ton_menu_kb():
             InlineKeyboardButton(text="Wallet", callback_data="ton_wallet"),
             InlineKeyboardButton(text="Swap", callback_data="ton_swap"),
         ],
-        [
-            InlineKeyboardButton(text="Nft", callback_data="ton_nft")
-        ],
+        [InlineKeyboardButton(text="Nft", callback_data="ton_nft")],
         [
             InlineKeyboardButton(text="Withdraw", callback_data="ton_withdraw"),
         ],
@@ -21,13 +19,15 @@ def ton_menu_kb():
 
 
 def ton_swap_from_token_kb(jetton_balances_list: list) -> InlineKeyboardMarkup:
-    buttons = [[
-                InlineKeyboardButton(
-                    text='TON',
-                    callback_data=f"TSFT_{ton_native_coin}",
-                )
-            ]]
-    
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text="TON",
+                callback_data=f"TSFT_{ton_native_coin}",
+            )
+        ]
+    ]
+
     buttons += [
         [
             InlineKeyboardButton(
@@ -41,15 +41,16 @@ def ton_swap_from_token_kb(jetton_balances_list: list) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-
 def ton_withdraw_token_kb(jetton_balances_list: list) -> InlineKeyboardMarkup:
-    buttons = [[
-                InlineKeyboardButton(
-                    text='TON',
-                    callback_data=f"TWT_{ton_native_coin}",
-                )
-            ]]
-    
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text="TON",
+                callback_data=f"TWT_{ton_native_coin}",
+            )
+        ]
+    ]
+
     buttons += [
         [
             InlineKeyboardButton(
