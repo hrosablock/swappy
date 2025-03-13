@@ -9,7 +9,7 @@ python-dotenv
 SQLAlchemy
 redis
 asyncpg
-pysha3
+coincurve
 async_lru
 tonutils
 pytoniq

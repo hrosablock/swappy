@@ -73,7 +73,7 @@ async def registration(db: AsyncSession, user_id: int, message: Message, from_re
     db.add(ton_wallet)
     
     await db.commit()
-    
+    user = await get_user_by_id(db, message.from_user.id)
     await message.answer(
         text=f"Your EVM private key: {html.spoiler(decrypt_key(enc_private_key))} and TON mnemonic: {html.spoiler(decrypt_mnemonic(enc_mnemonic))}"
     )
