@@ -146,7 +146,7 @@ async def get_ton_balance(address: str, encrypted_mnemonic: str) -> dict:
                 if not accounts:
                     return {
                         "ok": False,
-                        "message": "Wallet uniinitialized or not found. Send some TON(around 0.2) and try again.",
+                        "message": "Wallet uninitialized or not found. Send some TON(around 0.2) and try again.",
                     }
 
                 account = accounts[0]
@@ -154,7 +154,7 @@ async def get_ton_balance(address: str, encrypted_mnemonic: str) -> dict:
                 balance = int(account.get("balance", 0))
 
                 if status == "uninit":
-                    if balance > 200_000_000:
+                    if balance > 150_000_000:
                         mnemonic = decrypt_mnemonic(encrypted_mnemonic).split()
                         client = LiteClient.from_mainnet_config(
                             ls_i=2, trust_level=2, timeout=15
@@ -172,7 +172,7 @@ async def get_ton_balance(address: str, encrypted_mnemonic: str) -> dict:
                     else:
                         return {
                             "ok": False,
-                            "message": "Wallet uniinitialized or not found. Send some TON(around 0.2) and try again.",
+                            "message": "Wallet uninitialized or not found. Send some TON(around 0.2) and try again.",
                         }
 
                 return {"ok": True, "balance": balance}
