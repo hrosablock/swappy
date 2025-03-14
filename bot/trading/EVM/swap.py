@@ -92,6 +92,8 @@ async def swap(
                     wallet_address, "pending", rpc_url, web3
                 )
 
+            
+
             headers = get_headers_params("GET", "aggregator", "/swap", req_body)
             swap_data = await get_swap_data(session, req_body, headers)
             swap_tx_info = swap_data["data"][0]["tx"]
@@ -106,7 +108,7 @@ async def swap(
             }
 
             signed_tx = web3.eth.account.sign_transaction(tx_object, private_key)
-            tx_hash = await web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = await web3.eth.send_raw_transaction(signed_tx.raw_transaction)
             return web3.to_hex(tx_hash)
     except Exception:
         logging.exception("Error occurred in swap function")

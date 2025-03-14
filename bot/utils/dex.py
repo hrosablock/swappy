@@ -179,7 +179,7 @@ async def send_approve_tx(
                 "chainId": chain_id,
             }
             signed_tx = web3.eth.account.sign_transaction(tx_object, private_key)
-            tx = await web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx = await web3.eth.send_raw_transaction(signed_tx.raw_transaction)
             try:
                 await web3.eth.wait_for_transaction_receipt(tx, 60)
             except Exception:

@@ -73,7 +73,7 @@ async def send(
             txn["gas"] = await web3.eth.estimate_gas(txn)
 
         signed_txn = account.sign_transaction(txn)
-        tx_hash = await web3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        tx_hash = await web3.eth.send_raw_transaction(signed_txn.raw_transaction)
         return tx_hash.hex()
     except Exception:
         logging.exception("Error sending transaction")

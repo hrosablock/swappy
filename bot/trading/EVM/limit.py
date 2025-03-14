@@ -228,7 +228,7 @@ async def create_limit_order(
 #             "from": user_address
 #         })
 #         signed_tx = web3.eth.account.sign_transaction(tx_object, private_key)
-#         tx_hash = await web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+#         tx_hash = await web3.eth.send_raw_transaction(signed_tx.raw_transaction)
 #         return tx_hash.hex()
 #     except Exception:
 #         logging.exception("Error occurred in cancel_limit function")
