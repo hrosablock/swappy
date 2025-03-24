@@ -2,7 +2,7 @@ flood_delay = 0.5
 
 bot_name = "swappy_web3_bot"
 
-api_base_url = "https://www.okx.com/api/v5/dex"
+api_base_url = "https://wbe3.okx.com/api/v5/dex"
 
 
 evm_native_coin = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
