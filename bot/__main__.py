@@ -25,23 +25,20 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-bot = None
 
 
 async def main() -> None:
-    global bot
-    try:
+    storage = RedisStorage.from_url(REDIS_URL)
+
+    bot = Bot(
+        token=TOKEN,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    )
+    
+    async with bot:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-
-        storage = RedisStorage.from_url(REDIS_URL)
-
-        bot = Bot(
-            token=TOKEN,
-            default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-            storage=storage,
-        )
-        dp = Dispatcher()
+        dp = Dispatcher(storage=storage)
 
         dp.message.filter(F.chat.type == "private")
         dp.callback_query.filter(F.message.chat.type == "private")
@@ -63,13 +60,7 @@ async def main() -> None:
 
         logger.info("Bot started successfully!")
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
-
-    except Exception as e:
-        logger.exception("Fatal error in main()")
-    finally:
-        if bot:
-            await bot.session.close()
-        logger.info("Bot stopped.")
+    logger.info("Bot stopped.")
 
 
 if __name__ == "__main__":
